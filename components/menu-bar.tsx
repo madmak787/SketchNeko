@@ -1,102 +1,185 @@
 "use client"
 
 import type React from "react"
-
-import { Button } from "@/components/ui/button"
+import { useRef, useState } from "react"
+import {
+  ClipboardCopy,
+  FileCode2,
+  FileImage,
+  FolderOpen,
+  Grid3x3,
+  HelpCircle,
+  Info,
+  Keyboard,
+  Menu,
+  Save,
+  Trash2,
+} from "lucide-react"
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Menu, Download, Upload, Trash2, Undo, HelpCircle } from "lucide-react"
-import { useRef } from "react"
-import Image from "next/image"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Logo } from "@/components/brand"
+import { ThemeSegmented, ThemeToggleButton } from "@/components/theme-toggle"
+import { cn } from "@/lib/utils"
+
+export type ExportFormat = "png" | "svg" | "json" | "clipboard"
 
 interface MenuBarProps {
   onClear: () => void
-  onUndo: () => void
-  onExport: (format: "png" | "svg" | "json") => void
+  onExport: (format: ExportFormat) => void
   onImport: (file: File) => void
-  canUndo: boolean
-  onHelp?: () => void
+  onHelp: () => void
+  onAbout: () => void
+  onToggleGrid: () => void
+  showGrid: boolean
+  hasElements: boolean
+  mod: string
 }
 
-export function MenuBar({ onClear, onUndo, onExport, onImport, canUndo }: MenuBarProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null)
+export const ISLAND = "rounded-xl border bg-card shadow-island"
 
-  const handleImportClick = () => {
-    fileInputRef.current?.click()
-  }
+const iconButton = cn(
+  "inline-flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors",
+  "hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+  "data-[state=open]:bg-accent data-[state=open]:text-foreground",
+)
+
+export function MenuBar({ onClear, onExport, onImport, onHelp, onAbout, onToggleGrid, showGrid, hasElements, mod }: MenuBarProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [confirmClear, setConfirmClear] = useState(false)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      onImport(file)
-    }
+    if (file) onImport(file)
+    // Reset so choosing the same file again still triggers onChange
+    e.target.value = ""
   }
 
   return (
-    <div className="h-16 border-b-2 border-primary/20 bg-card flex items-center justify-between px-4 shadow-sm">
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2">
-          <div className="relative h-8 w-8">
-            <Image src="/logo.jpg" alt="SketchNeko" fill className="object-contain" unoptimized />
-          </div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-            SketchNeko
-          </h1>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" onClick={onUndo} disabled={!canUndo} className="rounded-xl">
-          <Undo className="h-4 w-4 mr-2" />
-          Undo
-        </Button>
-
+    <>
+      {/* Top-left: main menu + brand */}
+      <div className={cn(ISLAND, "absolute left-3 top-3 z-30 flex items-center gap-1 p-1 pr-3")}>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="rounded-xl">
-              <Menu className="h-5 w-5" />
-            </Button>
+          <DropdownMenuTrigger className={iconButton} aria-label="Main menu">
+            <Menu className="size-[18px]" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48 rounded-xl">
-            <DropdownMenuItem onClick={handleImportClick}>
-              <Upload className="h-4 w-4 mr-2" />
-              Import
+          <DropdownMenuContent align="start" sideOffset={8} className="w-64 rounded-xl p-1.5">
+            <DropdownMenuItem onSelect={() => fileInputRef.current?.click()}>
+              <FolderOpen />
+              Open…
+              <DropdownMenuShortcut>{mod}O</DropdownMenuShortcut>
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onExport("json")} disabled={!hasElements}>
+              <Save />
+              Save to file
+              <DropdownMenuShortcut>{mod}S</DropdownMenuShortcut>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => onExport("png")}>
-              <Download className="h-4 w-4 mr-2" />
+            <DropdownMenuItem onSelect={() => onExport("png")} disabled={!hasElements}>
+              <FileImage />
               Export as PNG
+              <DropdownMenuShortcut>{mod}⇧E</DropdownMenuShortcut>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onExport("json")}>
-              <Download className="h-4 w-4 mr-2" />
-              Export as JSON
+            <DropdownMenuItem onSelect={() => onExport("svg")} disabled={!hasElements}>
+              <FileCode2 />
+              Export as SVG
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onExport("clipboard")} disabled={!hasElements}>
+              <ClipboardCopy />
+              Copy as PNG
+              <DropdownMenuShortcut>{mod}⇧C</DropdownMenuShortcut>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onClear} className="text-destructive">
-              <Trash2 className="h-4 w-4 mr-2" />
-              Clear Canvas
+            <DropdownMenuLabel className="px-2 pb-1.5 pt-1 text-xs font-medium text-muted-foreground">Theme</DropdownMenuLabel>
+            <ThemeSegmented className="mx-1 mb-1.5" />
+            <DropdownMenuCheckboxItem checked={showGrid} onCheckedChange={onToggleGrid}>
+              <Grid3x3 />
+              Show grid
+              <DropdownMenuShortcut>{mod}&apos;</DropdownMenuShortcut>
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuItem onSelect={onHelp}>
+              <Keyboard />
+              Keyboard shortcuts
+              <DropdownMenuShortcut>?</DropdownMenuShortcut>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={onAbout}>
+              <Info />
+              About SketchNeko
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setConfirmClear(true)} disabled={!hasElements} variant="destructive">
+              <Trash2 />
+              Clear canvas
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          className="rounded-xl"
-          onClick={() => onHelp?.()}
-          aria-label="Help"
-          title="Help"
+        <button
+          type="button"
+          onClick={onAbout}
+          className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label="About SketchNeko"
         >
-          <HelpCircle className="h-5 w-5" />
-        </Button>
+          <Logo className="hidden sm:flex" />
+          <Logo className="sm:hidden" showName={false} />
+        </button>
       </div>
 
-      <input ref={fileInputRef} type="file" accept=".json" onChange={handleFileChange} className="hidden" />
-    </div>
+      {/* Top-right: theme + help */}
+      <div className={cn(ISLAND, "absolute right-3 top-3 z-30 flex items-center gap-0.5 p-1")}>
+        <ThemeToggleButton />
+        <Tooltip delayDuration={300}>
+          <TooltipTrigger asChild>
+            <button type="button" className={iconButton} onClick={onHelp} aria-label="Help and shortcuts">
+              <HelpCircle className="size-[18px]" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Help &amp; shortcuts (?)</TooltipContent>
+        </Tooltip>
+      </div>
+
+      <input
+        ref={fileInputRef}
+        id="sketchneko-open-file"
+        type="file"
+        accept=".json,.sketchneko,application/json"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+
+      <AlertDialog open={confirmClear} onOpenChange={setConfirmClear}>
+        <AlertDialogContent className="rounded-xl sm:max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear the canvas?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes every element from the board. You can bring it back with Undo ({mod}Z).
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" onClick={onClear}>
+              Clear canvas
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }

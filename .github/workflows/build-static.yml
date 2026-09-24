@@ -1,0 +1,44 @@
+name: Build static export
+
+on:
+  workflow_call:
+    inputs:
+      app-url:
+        description: Public site URL baked into the Next.js export
+        required: true
+        type: string
+
+jobs:
+  compile:
+    name: Install & compile
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (LTS)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Export Next public env
+        run: echo "NEXT_PUBLIC_APP_URL=${{ inputs.app-url }}" >> "$GITHUB_ENV"
+
+      - name: Install deps (CI)
+        run: npm install --force
+
+      - name: Build (Next static export)
+        run: npm run build
+
+      - name: Upload static site
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-site
+          path: out/
+          include-hidden-files: true
+          retention-days: 1
+          if-no-files-found: error

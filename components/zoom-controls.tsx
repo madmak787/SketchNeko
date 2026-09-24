@@ -1,53 +1,105 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Minus, Plus, Maximize2 } from "lucide-react"
+import type React from "react"
+import { Maximize, Minus, Plus, Redo2, Undo2 } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { cn } from "@/lib/utils"
 
 interface ZoomControlsProps {
   zoom: number
-  onZoomChange: (zoom: number) => void
+  onZoomIn: () => void
+  onZoomOut: () => void
+  onZoomReset: () => void
+  onZoomToFit: () => void
+  onUndo: () => void
+  onRedo: () => void
+  canUndo: boolean
+  canRedo: boolean
+  mod: string
 }
 
-export function ZoomControls({ zoom, onZoomChange }: ZoomControlsProps) {
-  const handleZoomIn = () => {
-    onZoomChange(Math.min(zoom + 10, 200))
-  }
-
-  const handleZoomOut = () => {
-    onZoomChange(Math.max(zoom - 10, 10))
-  }
-
-  const handleResetZoom = () => {
-    onZoomChange(100)
-  }
-
+function IconButton({
+  label,
+  onClick,
+  disabled,
+  children,
+}: {
+  label: string
+  onClick: () => void
+  disabled?: boolean
+  children: React.ReactNode
+}) {
   return (
-    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 bg-card border-2 border-primary/20 rounded-2xl p-2 shadow-lg">
-      <Button variant="ghost" size="icon" onClick={handleZoomOut} className="h-10 w-10 rounded-xl hover:bg-primary/10">
-        <Minus className="h-5 w-5" />
-      </Button>
+    <Tooltip delayDuration={300}>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          onClick={onClick}
+          disabled={disabled}
+          aria-label={label}
+          className={cn(
+            "flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors",
+            "hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-35",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          )}
+        >
+          {children}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="top">{label}</TooltipContent>
+    </Tooltip>
+  )
+}
 
-      <button
-        onClick={handleResetZoom}
-        className="px-4 py-2 text-sm font-medium hover:bg-primary/10 rounded-xl transition-colors min-w-[80px]"
-      >
-        {zoom}%
-      </button>
+export function ZoomControls({
+  zoom,
+  onZoomIn,
+  onZoomOut,
+  onZoomReset,
+  onZoomToFit,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
+  mod,
+}: ZoomControlsProps) {
+  const bar = "flex items-center gap-0.5 rounded-xl border bg-card p-1 shadow-island"
+  return (
+    // Sits above the toolbar on phones (where the toolbar moves to the bottom)
+    <div className="absolute bottom-[4.25rem] left-3 z-20 flex items-center gap-2 md:bottom-3">
+      <div className={bar}>
+        <IconButton label={`Zoom out (${mod} −)`} onClick={onZoomOut} disabled={zoom <= 10}>
+          <Minus className="size-4" />
+        </IconButton>
+        <Tooltip delayDuration={300}>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={onZoomReset}
+              className="h-8 min-w-14 rounded-md px-1.5 text-xs font-medium tabular-nums text-foreground/80 transition-colors hover:bg-accent hover:text-foreground"
+            >
+              {Math.round(zoom)}%
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top">Reset zoom ({mod} 0)</TooltipContent>
+        </Tooltip>
+        <IconButton label={`Zoom in (${mod} +)`} onClick={onZoomIn} disabled={zoom >= 400}>
+          <Plus className="size-4" />
+        </IconButton>
+        <div className="mx-0.5 h-5 w-px bg-border" />
+        <IconButton label="Zoom to fit (Shift 1)" onClick={onZoomToFit}>
+          <Maximize className="size-4" />
+        </IconButton>
+      </div>
 
-      <Button variant="ghost" size="icon" onClick={handleZoomIn} className="h-10 w-10 rounded-xl hover:bg-primary/10">
-        <Plus className="h-5 w-5" />
-      </Button>
-
-      <div className="w-px h-6 bg-border mx-1" />
-
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={handleResetZoom}
-        className="h-10 w-10 rounded-xl hover:bg-primary/10"
-      >
-        <Maximize2 className="h-5 w-5" />
-      </Button>
+      <div className={bar}>
+        <IconButton label={`Undo (${mod} Z)`} onClick={onUndo} disabled={!canUndo}>
+          <Undo2 className="size-4" />
+        </IconButton>
+        <IconButton label={`Redo (${mod} Shift Z)`} onClick={onRedo} disabled={!canRedo}>
+          <Redo2 className="size-4" />
+        </IconButton>
+      </div>
     </div>
   )
 }
