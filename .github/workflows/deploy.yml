@@ -23,7 +23,9 @@ jobs:
           case "${GITHUB_REF_NAME}" in
             main|master|production|Production)
               echo "app_url=https://tool.khanamir.me/sketch" >> "$GITHUB_OUTPUT"
-              echo "ftp_dir=/tool/sketch/" >> "$GITHUB_OUTPUT"
+              # FTP login from ~/.config/deploy/hostinger-ftp.env: its top level holds public_html/,
+              # and tool.khanamir.me is served from public_html/tool/
+              echo "ftp_dir=/public_html/tool/sketch/" >> "$GITHUB_OUTPUT"
               ;;
             *)
               echo "Unknown branch: ${GITHUB_REF_NAME}" >&2

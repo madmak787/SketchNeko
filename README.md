@@ -23,6 +23,12 @@ NEXT_PUBLIC_APP_URL=https://tool.khanamir.me/sketch npm run build
 
 ## Deploy
 
-GitHub Actions on `main` / `master` / `production` builds the static site with `NEXT_PUBLIC_APP_URL=https://tool.khanamir.me/sketch` and uploads `out/` over FTPS to `/tool/sketch/`, using the same `FTP_SERVER`, `FTP_USERNAME` and `FTP_PASSWORD` repository secrets as the other tools. It can also be run manually from the Actions tab (**Build & Deploy SketchNeko**).
+GitHub Actions on `main` / `master` / `production` builds the static site with `NEXT_PUBLIC_APP_URL=https://tool.khanamir.me/sketch` and uploads `out/` over FTPS to `/public_html/tool/sketch/` (served as https://tool.khanamir.me/sketch). The `FTP_SERVER`, `FTP_USERNAME` and `FTP_PASSWORD` repository secrets come from `~/.config/deploy/hostinger-ftp.env`:
+
+```bash
+gh secret set -f ~/.config/deploy/hostinger-ftp.env -R madmak787/SketchNeko
+```
+
+With that login the FTP top level contains `public_html/`, so every path must start with `/public_html`. It can also be run manually from the Actions tab (**Build & Deploy SketchNeko**).
 
 `public/module_info.json` and `public/thumbnail.png` describe the tool for the catalog on tool.khanamir.me.
