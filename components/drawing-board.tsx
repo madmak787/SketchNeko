@@ -1538,6 +1538,13 @@ export function DrawingBoard() {
         mod={mod}
       />
 
+      <p className="absolute bottom-[4.25rem] right-3 z-10 text-[11px] text-muted-foreground md:bottom-3">
+        Coded By &copy;
+        <a href="https://khanamir.me" target="_blank" rel="noopener" className="font-medium hover:text-foreground hover:underline">
+          madmak787
+        </a>
+      </p>
+
       {hint && (
         <div className="pointer-events-none absolute bottom-5 left-1/2 z-10 hidden max-w-[50vw] -translate-x-1/2 truncate text-xs text-muted-foreground lg:block">
           {hint}
