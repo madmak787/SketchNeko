@@ -4,6 +4,8 @@ A hand-drawn style whiteboard by [Mohd Amir Khan](https://khanamir.me). Sketch d
 
 Live: **https://tool.khanamir.me/sketch**
 
+![SketchNeko whiteboard with a hand-drawn sign-up flowchart](docs/screenshot.webp)
+
 ## Run locally
 
 ```bash
