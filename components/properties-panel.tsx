@@ -148,7 +148,7 @@ function ColorRow({
           aria-pressed={value === color}
           onClick={() => onChange(color)}
           className={cn(
-            "size-6 rounded-md ring-1 ring-inset ring-foreground/10 transition-transform hover:scale-110",
+            "size-6 rounded-md ring-1 ring-inset ring-foreground/10 transition-shadow hover:ring-2 hover:ring-foreground/30",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             value === color && "ring-2 ring-primary ring-offset-2 ring-offset-card",
           )}
@@ -165,7 +165,7 @@ function ColorRow({
       ))}
       <label
         className={cn(
-          "relative size-6 cursor-pointer overflow-hidden rounded-md ring-1 ring-inset ring-foreground/10 transition-transform hover:scale-110",
+          "relative size-6 cursor-pointer overflow-hidden rounded-md ring-1 ring-inset ring-foreground/10 transition-shadow hover:ring-2 hover:ring-foreground/30",
           isCustom && value !== "transparent" && "ring-2 ring-primary ring-offset-2 ring-offset-card",
         )}
         style={{

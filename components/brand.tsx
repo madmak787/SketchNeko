@@ -13,7 +13,7 @@ export function Logo({ className, showName = true }: { className?: string; showN
   return (
     <span className={cn("flex items-center gap-2", className)}>
       <LogoMark />
-      {showName && <span className="font-display text-[17px] font-semibold tracking-tight">SketchNeko</span>}
+      {showName && <span className="font-display text-[17px] font-medium">SketchNeko</span>}
     </span>
   )
 }
